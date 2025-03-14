@@ -5,46 +5,18 @@ pipeline {
             steps {
                 script {
                     def releaseEndpoints = [
-                        'http://cmqt-orchestrator-release.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-router-release.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-rater-release.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-quoter-release.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-dims-capacity-release.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://fxf-lhds-leap-release.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://fxf-lhds-volsvc-release.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://customer-ofs-service-release.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://fxf-ratequotedata-service-release.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://cmqt_ui-release.devapp.paas.fedex.com/actuator/info',
-                        'https://orchestrator_ui-release.devapp.paas.fedex.com/actuator/info',
-                        'https://cmqt-messages-release.app.cledev1-az1.paas.fedex.com/actuator/info'
+                        
+                        'https://actuator/info',
+                        'https://actuator/info'
                     ]
  
                     def developmentEndpoints = [
-                        'http://cmqt-orchestrator-development.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-router-development.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-rater-development.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-quoter-development.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-dims-capacity-development.app.cledev1-az1.paas.fedex.com/actuator/info',
-                        'https://fxf-lhds-leap-development.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://fxf-lhds-volsvc-development.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://customer-ofs-service-development.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://fxf-ratequotedata-service-development.app.wtcdev3.paas.fedex.com/actuator/info',
-                        'https://cmqt_ui-development.devapp.paas.fedex.com/actuator/info',
-                        'https://orchestrator_ui-development.devapp.paas.fedex.com/actuator/info'
+                        ...
                     ]
                     
                     def prodEndpoints = [
-                        'https://cmqt-orchestrator-production.app.clecc3-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-router-production.app.clecc3-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-rater-production.app.clecc3-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-quoter-production.app.clecc3-az1.paas.fedex.com/actuator/info',
-                        'https://cmqt-dims-capacity-production.app.clecc3-az1.paas.fedex.com/actuator/info',
-                        'https://fxf-lhds-leap-production.app.wtcbo8.paas.fedex.com/actuator/info',
-                        'https://fxf-lhds-volsvc-production.app.wtcbo8.paas.fedex.com/actuator/info',
-                        'https://customer-ofs-service-production.app.wtcbo8.paas.fedex.com/actuator/info',
-                        'https://fxf-ratequotedata-service-production.app.wtcbo8.paas.fedex.com/actuator/info',
-                        'https://orchestrator_ui.app.paas.fedex.com/actuator/info',
-                        'https://cmqt_ui.app.paas.fedex.com/actuator/info'
+                        'https://actuator/info',
+                       
                     ]
  
                     def allEndpoints = [
