@@ -1,0 +1,124 @@
+pipeline {
+    agent any
+    stages {
+        stage('Call Actuator Endpoints') {
+            steps {
+                script {
+                    def releaseEndpoints = [
+                        'http://cmqt-orchestrator-release.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-router-release.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-rater-release.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-quoter-release.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-dims-capacity-release.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://fxf-lhds-leap-release.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://fxf-lhds-volsvc-release.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://customer-ofs-service-release.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://fxf-ratequotedata-service-release.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://cmqt_ui-release.devapp.paas.fedex.com/actuator/info',
+                        'https://orchestrator_ui-release.devapp.paas.fedex.com/actuator/info',
+                        'https://cmqt-messages-release.app.cledev1-az1.paas.fedex.com/actuator/info'
+                    ]
+ 
+                    def developmentEndpoints = [
+                        'http://cmqt-orchestrator-development.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-router-development.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-rater-development.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-quoter-development.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-dims-capacity-development.app.cledev1-az1.paas.fedex.com/actuator/info',
+                        'https://fxf-lhds-leap-development.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://fxf-lhds-volsvc-development.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://customer-ofs-service-development.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://fxf-ratequotedata-service-development.app.wtcdev3.paas.fedex.com/actuator/info',
+                        'https://cmqt_ui-development.devapp.paas.fedex.com/actuator/info',
+                        'https://orchestrator_ui-development.devapp.paas.fedex.com/actuator/info'
+                    ]
+                    
+                    def prodEndpoints = [
+                        'https://cmqt-orchestrator-production.app.clecc3-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-router-production.app.clecc3-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-rater-production.app.clecc3-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-quoter-production.app.clecc3-az1.paas.fedex.com/actuator/info',
+                        'https://cmqt-dims-capacity-production.app.clecc3-az1.paas.fedex.com/actuator/info',
+                        'https://fxf-lhds-leap-production.app.wtcbo8.paas.fedex.com/actuator/info',
+                        'https://fxf-lhds-volsvc-production.app.wtcbo8.paas.fedex.com/actuator/info',
+                        'https://customer-ofs-service-production.app.wtcbo8.paas.fedex.com/actuator/info',
+                        'https://fxf-ratequotedata-service-production.app.wtcbo8.paas.fedex.com/actuator/info',
+                        'https://orchestrator_ui.app.paas.fedex.com/actuator/info',
+                        'https://cmqt_ui.app.paas.fedex.com/actuator/info'
+                    ]
+ 
+                    def allEndpoints = [
+                        'release': releaseEndpoints,
+                        'development': developmentEndpoints,
+                        'production': prodEndpoints
+                    ]
+ 
+                    def versions = []
+ 
+                    allEndpoints.each { env, endpoints ->
+                        endpoints.each { endpoint ->
+                            versions.add(callEndpoint(endpoint, env))
+                        }
+                    }
+ 
+                    writeJSON file: 'versions_report.json', json: versions
+                }
+            }
+        }
+        stage('Generate Report') {
+            steps {
+                script {
+                    def versions = readJSON file: 'versions_report.json'
+                    def report = """
+<html>
+<head><title>Actuator Versions Report</title></head>
+<body>
+<h1>Actuator Endpoints Versions</h1>
+<table border='1'>
+<tr><th>Environment</th><th>Artifact</th><th>Build Version</th><th>Last update time</th></tr>
+                    """
+                    versions.each { versionInfo ->
+                        report += "<tr><td>${versionInfo.env}</td><td>${versionInfo.artifact}</td><td>${versionInfo.buildVersion}</td><td>${versionInfo.time}</td></tr>"
+                    }
+                    report += """
+</table>
+</body>
+</html>
+                    """
+                    writeFile file: 'actuator_report.html', text: report
+                }
+            }
+        }
+        stage('Publish Report') {
+            steps {
+                publishHTML target: [
+                    reportName : 'Actuator Versions Report',
+                    reportDir  : '.',
+                    reportFiles: 'actuator_report.html',
+                    alwaysLinkToLastBuild: true
+                ]
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
+ 
+def callEndpoint(String endpoint, String env) {
+    try {
+        def response = httpRequest url: endpoint, httpMode: 'GET'
+        def responseBody = readJSON text: response.content
+ 
+        def version = responseBody.build?.version ?: "Unknown"
+        def artifact = responseBody.build?.artifact ?: endpoint
+        def time = responseBody.build?.time ?: "Unknown"
+ 
+        return [env: env, artifact: artifact, buildVersion: version, time: time]
+    } catch (Exception e) {
+        echo "Failed to retrieve version from ${endpoint}: ${e.message}"
+        return [env: env, artifact: endpoint, buildVersion: "Error", time: ""]
+    }
+}
